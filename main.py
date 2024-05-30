@@ -1,6 +1,8 @@
 # IMPORTS
-from flask import Flask, request, jsonify
-from snowflakeConfig import STUDENT_DEFAULT_PASSWORD, init_snowflake_connection  
+from flask import Flask, request, jsonify, send_file
+from snowflakeConfig import STUDENT_DEFAULT_PASSWORD, init_snowflake_connection, COMPANY_PASSWORD
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -42,6 +44,17 @@ def get_company_data_from_snowflake():
         cursor.close()
     return company_data  # all company data
 
+def get_specific_company_data_from_snowflake(company_id):
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM COMPANY WHERE ID = %s", (company_id,))
+        specific_company_data = cursor.fetchone()
+    except Exception as e:
+        raise e
+    finally:
+        cursor.close()
+    return specific_company_data  # specific companyID data
+
 # Student validation
 def validate_student_credentials(student_id, password):
     student_data = get_student_data_from_snowflake(student_id)  # specific studentID data
@@ -53,6 +66,18 @@ def validate_student_credentials(student_id, password):
         return {"error": "Password doesn't match"}, 401 #Unauthorized - Invalid Authentication Creds
     else:
         return student_data, 200 # OK
+
+# Function to validate company
+def validate_company_credentials(company_id,company_password):
+    specific_company_data = get_specific_company_data_from_snowflake(company_id)  # specific companyID data
+    if not specific_company_data:
+        return {"error": f"Company ID {company_id} doesn't exist"}, 404
+    if not company_password:
+        return {"error": f"Password not given"}, 404
+    if company_password!= COMPANY_PASSWORD:
+        return {"error": "Password doesn't match"}, 401 #Unauthorized - Invalid Authentication Creds
+    else:
+        return specific_company_data, 200 # OK
 
 # Function to get the eligible company of a student by ID
 def get_eligible_companies(student_percentage):
@@ -97,8 +122,43 @@ def calculate_placement_likelihood(student_data, company, weight=0.5, branch_wei
         return likelihood
     else:
         return 0.0
+#--------------------------------------------------------------------------------------------------------------------------------------------------
+# Route function to add a new student --->                                          /student/add
+@app.route('/student/add', methods=['POST'])
+def add_student():
+    student_id = request.json.get('student_id')
+    name = request.json.get('name')
+    branch = request.json.get('branch')
+    admission_year = request.json.get('admission_year')
+    placed = request.json.get('placed', 'No')  # Default to 'No'
+    semester_wise_marks = request.json.get('semester_wise_marks')
+    percentage = request.json.get('percentage')
+    certified_skills = request.json.get('certified_skills', '')
 
-# Route Function to display Student Details --->     /student/details
+    # if key and values aren't given
+    if not student_id or not name or not branch or not admission_year or not semester_wise_marks or not percentage:
+        return jsonify({"error": "Missing required student details"}), 400  # Bad Request - Missing Parameter
+
+    try:
+        # Check if student ID already exists
+        existing_student = get_student_data_from_snowflake(student_id)
+        if existing_student:
+            return jsonify({"error": "Student ID already exists"}), 409  # Conflict - ID already exists
+
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO STUDENT (ID, NAME, BRANCH, ADMYEAR, PLACED, SEM_WISE, PERCENTAGE, CERTIFIED_SKILLS) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (student_id, name, branch, admission_year, placed, semester_wise_marks, percentage, certified_skills)
+        )
+        conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    finally:
+        cursor.close()
+
+    return jsonify({"message": "Student added successfully"}), 201  # Created
+
+# Route Function to display Student Details --->                                        /student/details
 @app.route('/student/details', methods=['GET'])
 def display_student_details():
     student_id = request.args.get('student_id')
@@ -125,6 +185,7 @@ def display_student_details():
     }
     return jsonify(display), status_code
 
+# Route Function to display only the eligible companies for the specific student --->                   /student/eligibility
 @app.route('/student/eligibility', methods=['GET'])
 def student_eligibilty():
     student_id = request.args.get('student_id')
@@ -167,6 +228,298 @@ def student_eligibilty():
         eligible_companies_list.append(company_display)
 
     return jsonify(eligible_companies_list)
+
+# Route function to update a student's details --->                                                         /student/update_skills
+@app.route('/student/update_skills', methods=['POST'])
+def update_student_skills():
+    student_id = request.json.get('student_id')
+    password = request.json.get('password')
+    new_skills = request.json.get('new_skills')
+
+    # if key and values aren't given
+    if not student_id or not password or not new_skills:
+        return jsonify({"error": "Missing student_id, password, or new_skills"}), 400 # Bad Request - Missing Parameter
+
+    student_data, status_code = validate_student_credentials(student_id, password)
+
+    if status_code != 200:
+        return jsonify({"error": "Invalid student ID or password"}), status_code
+
+    if student_data[7] is None:
+        updated_skills = new_skills
+    else:
+        student_data[7].extend(new_skills)
+        updated_skills = list(set(student_data[7]))  # Remove duplicates
+
+    # Update the student's skills in the database
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE STUDENT SET CERTIFIED_SKILLS = '{', '.join(updated_skills)}' WHERE ID = '{student_id}'")
+        conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500 # Internal Server Error
+    finally:
+        cursor.close()
+
+    return jsonify({"message": f"Skills updated successfully of student ID {student_id}"}), 200 # OK
+
+
+@app.route('/student/apply', methods=['POST'])
+def apply_to_company():
+    student_id = request.json.get('student_id')
+    password = request.json.get('password')
+    company_id = request.json.get('company_id')
+
+    # if key and values aren't given
+    if not student_id or not password or not company_id:
+        return jsonify({"error": "Missing student_id, password, or company_id"}), 400  # Bad Request - Missing Parameter
+
+    # Validate student credentials
+    student_data, status_code = validate_student_credentials(student_id, password)
+    if status_code != 200:
+        return jsonify(student_data), status_code
+
+    # storing into variables
+    student_place_status = student_data[3]
+    student_percentage = float(student_data[5])
+
+    # Check if the student is already placed
+    if student_place_status == "Yes":
+        return jsonify({"message": "You're Already Placed!"}), 200
+
+    # Get company data
+    company_data = get_specific_company_data_from_snowflake(company_id)
+    if not company_data:
+        return jsonify({"error": f"Company ID {company_id} doesn't exist"}), 404  # Not Found
+    
+    company_required_percentage = float(company_data[3])
+    # Check if the student is eligible for the company
+    if student_percentage < company_required_percentage:
+        return jsonify({"error": "Student does not meet the required percentage for this company"}), 403  # Forbidden
+
+    # Check matching skills
+    matching_skills, _, _ = get_matching_skills(student_data[7], company_data[5])
+    if not matching_skills:
+        return jsonify({"error": "Student does not have the required skills for this company"}), 403  # Forbidden
+
+    # Insert application record into the APPLICATION table
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO APPLICATION (STUDENT_ID, COMPANY_ID) VALUES (%s, %s)",
+            (student_id, company_id)
+        )
+        conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    finally:
+        cursor.close()
+
+    return jsonify({"message": "Application submitted successfully"}), 201  # Created
+
+
+# Route function to add a new company --->                                                                  /company/add
+@app.route('/company/add', methods=['POST'])
+def add_company():
+    company_id = request.json.get('company_id')
+    name = request.json.get('name')
+    brief_description = request.json.get('brief_description')
+    required_percentage = request.json.get('required_percentage')
+    branch = request.json.get('branch')
+    required_skills = request.json.get('required_skills')
+
+    # if key and values aren't given
+    if not company_id or not name or not brief_description or not required_percentage or not branch or not required_skills:
+        return jsonify({"error": "Missing required company details"}), 400  # Bad Request - Missing Parameter
+
+    try:
+        # Check if company ID already exists
+        existing_company = get_specific_company_data_from_snowflake(company_id)
+        if existing_company:
+            return jsonify({"error": "Company ID already exists"}), 409  # Conflict - ID already exists
+
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO COMPANY (ID, COMPANY_NAME, BRIEF_DESCRIPTION, REQUIRED_PERCENTAGE, BRANCH, REQUIRED_SKILLS) VALUES (%s, %s, %s, %s, %s, %s)",
+            (company_id, name, brief_description, required_percentage, branch, required_skills)
+        )
+        conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    finally:
+        cursor.close()
+
+    return jsonify({"message": "Company added successfully"}), 201  # Created
+
+# Route function to display the details of specific company --->                                             /company/details
+@app.route('/company/details',methods=['GET'])
+def display_company_details():
+    company_id = request.args.get('company_id')
+    company_password = request.args.get('company_password')
+    
+    # if key and values aren't given
+    if not company_id or not company_password:
+        return jsonify({"error": "Missing company_id or company_password"}), 400 # Bad Request - Missing Parameter
+    
+    company_data, status_code = validate_company_credentials(company_id, company_password)
+
+    if status_code != 200: 
+        return jsonify(company_data),status_code
+    display_specific_company_details = {
+        "Company ID":          company_data[0],
+        "Branch":              company_data[4],
+        "Name":                company_data[1],
+        "Brief Description":   company_data[2],
+        "Required Percentage": company_data[3],
+        "Required Skills":     company_data[5]
+    }
+    return jsonify(display_specific_company_details), status_code
+
+# Route function to delete a company by its ID --->                                                            /company/delete
+@app.route('/company/delete', methods=['DELETE'])
+def delete_company():
+    company_id = request.json.get('company_id')
+    company_password = request.json.get('company_password')
+
+    # if key and values aren't given
+    if not company_id or not company_password:
+        return jsonify({"error": "Missing company_id or company_password"}), 400 # Bad Request - Missing Parameter
+
+    company_data, status_code = validate_company_credentials(company_id, company_password)
+
+    if status_code != 200:
+        return jsonify({"error": "Invalid company ID or password"}), status_code
+
+    # Delete the company from the database
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM COMPANY WHERE ID = %s", (company_id,))
+        conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500 # Internal Server Error
+    finally:
+        cursor.close()
+
+    return jsonify({"message": "Company deleted successfully"}), 200 # OK
+
+# Route to display applications for a specific company --->                                         /company/applications
+@app.route('/company/applications', methods=['GET'])
+def display_company_applications():
+    company_id = request.args.get('company_id')
+    company_password = request.args.get('company_password')
+
+    # if key and values aren't given
+    if not company_id or not company_password:
+        return jsonify({"error": "Missing company_id or company_password"}), 400 # Bad Request - Missing Parameter
+
+    company_data, status_code = validate_company_credentials(company_id, company_password)
+    if status_code != 200:
+        return jsonify(company_data), status_code
+
+    # Fetch applications for the company
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT APPLICATION_ID, STUDENT_ID FROM APPLICATION WHERE COMPANY_ID = %s", (company_id,)
+        )
+        applications = cursor.fetchall()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    finally:
+        cursor.close()
+
+    if not applications:
+        return jsonify({"message": "No applications found for this company"}), 404
+
+    applications_list = []
+    for application in applications:
+        student_id = application[1]
+        student_data = get_student_data_from_snowflake(student_id=student_id)
+        matching_skills, student_skills, company_required_skills = get_matching_skills(student_data[7], company_data[5])
+        application_display = {
+            "Application ID": application[0],
+            "Compamy ID" : company_id,
+            "Student ID": application[1],
+            "Student Name": student_data[1],
+            "Branch": student_data[6],
+            "Percentage": student_data[5],
+            "Certified Skills": student_data[7],
+            "Matched Skills":  matching_skills,
+            "Admission Year" : student_data [2]
+        }
+        applications_list.append(application_display)
+
+    return jsonify(applications_list), 200
+
+# Route to accept or reject an application --->                                             /company/application/update
+@app.route('/company/application/update', methods=['POST'])
+def update_application_status():
+    application_id = request.json.get('application_id')
+    company_id = request.json.get('company_id')
+    company_password = request.json.get('company_password')
+    status = request.json.get('status')
+
+    # if key and values aren't given
+    if not application_id or not company_id or not company_password or not status:
+        return jsonify({"error": "Missing application_id, company_id, company_password, or status"}), 400  # Bad Request - Missing Parameter
+
+    if status not in ['accept', 'reject']:
+        return jsonify({"error": "Invalid status. Must be 'accept' or 'reject'"}), 400  # Bad Request - Invalid Status
+
+    company_data, status_code = validate_company_credentials(company_id, company_password)
+    if status_code != 200:
+        return jsonify(company_data), status_code
+
+    # Fetch application details
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT STUDENT_ID FROM APPLICATION WHERE APPLICATION_ID = %s AND COMPANY_ID = %s", (application_id, company_id)
+        )
+        application = cursor.fetchone()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    finally:
+        cursor.close()
+
+    if not application:
+        return jsonify({"error": "Application not found"}), 404  # Not Found
+
+    student_id = application[0]
+
+    # If status is 'accept', update the student's 'PLACED' column
+    if status == 'accept':
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE STUDENT SET PLACED = 'Yes' WHERE ID = %s", (student_id,)
+            )
+            conn.commit()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500  # Internal Server Error
+        finally:
+            cursor.close()
+        
+        message = "Application accepted and student status updated to 'Placed'"
+    
+    # If status is 'reject', simply acknowledge the rejection
+    else:
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE STUDENT SET PLACED = 'No' WHERE ID = %s", (student_id,)
+            )
+            conn.commit()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500  # Internal Server Error
+        finally:
+            cursor.close()
+        message = "Application rejected"
+
+    return jsonify({"message": message}), 200  # OK
+
+
+#--------------------------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     if conn is None:

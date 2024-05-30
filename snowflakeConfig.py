@@ -1,6 +1,7 @@
 import snowflake.connector
 
-STUDENT_DEFAULT_PASSWORD = "student123"  # default password
+STUDENT_DEFAULT_PASSWORD = "student123"     # default student password
+COMPANY_PASSWORD = 'company*123'            #default company password
 
 # Snowflake connection parameters
 SNOWFLAKE_ACCOUNT = 'gazzvap-iw54421'

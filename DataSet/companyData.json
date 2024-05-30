@@ -1,0 +1,122 @@
+{
+    "CS": {
+        "1": {
+            "Company Name": "Tech Innovators",
+            "Brief Description": "A leading software development company specializing in AI",
+            "Required Percentage": 55.0,
+            "Branch": "CS",
+            "Required Skills": "Python, Machine Learning, AI, Problem-Solving"
+        },
+        "5": {
+            "Company Name": "InfoTech Solutions",
+            "Brief Description": "Provides comprehensive IT consulting and software solutions",
+            "Required Percentage": 50.0,
+            "Branch": "CS",
+            "Required Skills": "Java, SQL, Project Management, Problem-Solving"
+        },
+        "9": {
+            "Company Name": "CyberTech",
+            "Brief Description": "Cybersecurity firm providing end-to-end security solutions",
+            "Required Percentage": 47.0,
+            "Branch": "CS",
+            "Required Skills": "Network Security, Cryptography, Python, Risk Assessment"
+        },
+        "13": {
+            "Company Name": "CloudWare",
+            "Brief Description": "Experts in cloud computing and data management",
+            "Required Percentage": 76.0,
+            "Branch": "CS",
+            "Required Skills": "Cloud Computing, AWS, Python, Data Management"
+        }
+    },
+    "MECH": {
+        "2": {
+            "Company Name": "Mech Solutions",
+            "Brief Description": "Experts in automotive design and manufacturing",
+            "Required Percentage": 70.0,
+            "Branch": "MECH",
+            "Required Skills": "CAD, SolidWorks, Thermodynamics, Manufacturing Processes"
+        },
+        "6": {
+            "Company Name": "AutoMech Corp",
+            "Brief Description": "Leaders in mechanical engineering and robotics",
+            "Required Percentage": 70.0,
+            "Branch": "MECH",
+            "Required Skills": "Robotics, CAD, MATLAB, Mechanical Design"
+        },
+        "10": {
+            "Company Name": "Precision Mech",
+            "Brief Description": "Specialized in precision engineering and machine tools",
+            "Required Percentage": 69.0,
+            "Branch": "MECH",
+            "Required Skills": "Precision Engineering, CNC, CAD, Machine Tools"
+        },
+        "14": {
+            "Company Name": "Advanced MechWorks",
+            "Brief Description": "Innovators in mechanical systems and automation",
+            "Required Percentage": 71.0,
+            "Branch": "MECH",
+            "Required Skills": "Automation, CAD, SolidWorks, Mechanical Systems"
+        }
+    },
+    "CIVIL": {
+        "3": {
+            "Company Name": "BuildCon",
+            "Brief Description": "Renowned for innovative construction and infrastructure projects",
+            "Required Percentage": 68.0,
+            "Branch": "CIVIL",
+            "Required Skills": "AutoCAD, Structural Engineering, Project Management, Civil 3D"
+        },
+        "7": {
+            "Company Name": "GreenBuild",
+            "Brief Description": "Focused on sustainable building and green architecture",
+            "Required Percentage": 55.0,
+            "Branch": "CIVIL",
+            "Required Skills": "Sustainable Design, LEED, AutoCAD, Green Building"
+        },
+        "11": {
+            "Company Name": "Urban Architects",
+            "Brief Description": "Leading urban planning and architectural design firm",
+            "Required Percentage": 66.0,
+            "Branch": "CIVIL",
+            "Required Skills": "Urban Planning, AutoCAD, Revit, Architectural Design"
+        },
+        "15": {
+            "Company Name": "Structural Design",
+            "Brief Description": "Specialists in structural engineering and design consulting",
+            "Required Percentage": 67.0,
+            "Branch": "CIVIL",
+            "Required Skills": "Structural Engineering, SAP2000, AutoCAD, Design Analysis"
+        }
+    },
+    "ELECTRONIC": {
+        "4": {
+            "Company Name": "ElectroDynamics",
+            "Brief Description": "Specializes in advanced electronic systems and IoT solutions",
+            "Required Percentage": 72.0,
+            "Branch": "ELECTRONIC",
+            "Required Skills": "IoT, Embedded Systems, C++, Electronics Design"
+        },
+        "8": {
+            "Company Name": "Smart Circuits",
+            "Brief Description": "Innovators in microelectronics and embedded systems",
+            "Required Percentage": 74.0,
+            "Branch": "ELECTRONIC",
+            "Required Skills": "Microelectronics, Embedded Systems, PCB Design, C"
+        },
+        "12": {
+            "Company Name": "NextGen Electronics",
+            "Brief Description": "Pioneers in consumer electronics and wearable technology",
+            "Required Percentage": 73.0,
+            "Branch": "ELECTRONIC",
+            "Required Skills": "Consumer Electronics, Wearable Technology, Circuit Design, Python"
+        },
+        "16": {
+            "Company Name": "Quantum Electronics",
+            "Brief Description": "Cutting-edge research in quantum computing and electronics",
+            "Required Percentage": 45.0,
+            "Branch": "ELECTRONIC",
+            "Required Skills": "Quantum Computing, Electronics, Python, Research"
+        }
+    }
+}

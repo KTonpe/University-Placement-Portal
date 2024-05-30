@@ -1,0 +1,12 @@
+STUDENT/COMPANY:
+for branch_name, branch in data.items():
+    for student_id, student in branch.items():
+        student['XYZ']= "ABC"
+
+
+PLOTS/GRAPHS : for circle and line grpahs
+    plt.plot(branches, company_counts, marker='o', linestyle='-', color='skyblue')
+    plt.xlabel('Branches')
+    plt.ylabel('Number of Companies')
+    plt.title('Number of Companies Branch-wise')
+    plt.show()
