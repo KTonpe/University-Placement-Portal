@@ -1,5 +1,7 @@
 # IMPORTS
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
+import html
+import re
 from snowflakeConfig import STUDENT_DEFAULT_PASSWORD, init_snowflake_connection, COMPANY_PASSWORD
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------
@@ -245,8 +247,13 @@ def delete_student():
     if request.method == 'DELETE':
         student_id = request.args.get('student_id')
         password = request.args.get('password')
+
         if not student_id or not password:
             return jsonify({"error": "Missing student_id or password"}), 400 # Bad Request - Missing Parameter
+        
+        # Check for SQL injection patterns (simple heuristic check)
+        if re.search(r"[\'\";]", student_id) or re.search(r"[\'\";]", password):
+            return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
         
         student_data, status_code = validate_student_credentials(student_id, password)
 
@@ -303,46 +310,59 @@ def display_student_details():
 # Route Function to display only the eligible companies for the specific student --->                   /student/eligibility
 @app.route('/student/eligibility', methods=['GET'])
 def student_eligibilty():
-    student_id = request.args.get('student_id')
-    password = request.args.get('password')
+    if request.method == 'GET':
+        student_id = request.args.get('student_id')
+        password = request.args.get('password')
 
-    student_data, status_code = validate_student_credentials(student_id, password)
+        # Validate input
+        if not student_id or not password:
+            return jsonify({"error": "Missing student_id or password"}), 400  # Bad Request - Missing Parameter
 
-    if status_code != 200:
-        return jsonify({"error": "Invalid student ID or password"}), status_code
-    
-    if student_data[3] == "Yes":
-        return jsonify({"message": "You're Already Placed!"}),200
-    
-    student_percentage = float(student_data[5])
-    # get eligible companies based on student's percentage
-    eligible_companies = get_eligible_companies(student_percentage)
+        # Check for SQL injection patterns (simple heuristic check)
+        if re.search(r"[\'\";]", student_id) or re.search(r"[\'\";]", password):
+            return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
 
-    if not eligible_companies:
-        return jsonify({"message": "No eligible companies found!"}), 404
-    
-    # print details of company in matched with additional data like likelihood and Matching Skills
-    eligible_companies_list = []
-    for company in eligible_companies:
-        likelihood = calculate_placement_likelihood(student_data= student_data, company= company)
-        matching_skills, student_skill_set, _ = get_matching_skills(student_data[7], company[5])
-        common_skills = ", ".join(matching_skills) if matching_skills else "No matching skills found!"
+        student_data, status_code = validate_student_credentials(student_id, password)
+
+        if status_code != 200:
+            return jsonify({"error": "Invalid student ID or password"}), status_code
         
-        company_display = {
-            "Branch":                     company[4],
-            "Name":                       company[1],
-            "Brief Description":          company[2],
-            "Required Percentage":        float(company[3]),
-            "Required Skills":            company[5],
-            "Student Branch":             student_data[6],
-            "Student Skills":             list(student_skill_set),
-            "Matching Skills":            common_skills,
-            "Student Percentage":         student_percentage,
-            "Placement Likelihood":       likelihood
-        }
-        eligible_companies_list.append(company_display)
+        if student_data[3] == "Yes":
+            return jsonify({"message": "You're Already Placed!"}),200
+        
+        student_percentage = float(student_data[5])
+        # get eligible companies based on student's percentage
+        eligible_companies = get_eligible_companies(student_percentage)
 
-    return jsonify(eligible_companies_list)
+        if not eligible_companies:
+            return jsonify({"message": "No eligible companies found!"}), 404
+        
+        # print details of company in matched with additional data like likelihood and Matching Skills
+        eligible_companies_list = []
+        for company in eligible_companies:
+            likelihood = calculate_placement_likelihood(student_data= student_data, company= company)
+            matching_skills, student_skill_set, _ = get_matching_skills(student_data[7], company[5])
+            common_skills = ", ".join(matching_skills) if matching_skills else "No matching skills found!"
+            
+            company_display = {
+                "Branch":                     html.escape(company[4]),
+                "Name":                       html.escape(company[1]),
+                "Brief Description":          html.escape(company[2]),
+                "Required Percentage":        float(company[3]),
+                "Required Skills":            html.escape(company[5]),
+                "Student Branch":             html.escape(student_data[6]),
+                "Student Skills":             html.escape(list(student_skill_set)),
+                "Matching Skills":            html.escape(common_skills),
+                "Student Percentage":         student_percentage,
+                "Placement Likelihood":       likelihood
+            }
+            eligible_companies_list.append(company_display)
+
+        return jsonify(eligible_companies_list)
+    
+    # Handle other methods for /student/eligibility
+    else:
+        return jsonify({"error": "Method Not Allowed"}), 405 # Method Not Allowed
 
 # Route function to update a student's details --->                                                         /student/update_skills
 @app.route('/student/update_skills', methods=['POST'])
