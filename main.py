@@ -122,68 +122,183 @@ def calculate_placement_likelihood(student_data, company, weight=0.5, branch_wei
         return likelihood
     else:
         return 0.0
+
+# Function to calculate the persenatge    
+def calculate_percentage(semester_wise_marks):
+    try:
+        # Split the string to extract individual marks
+        marks_list = semester_wise_marks.split(',')
+        
+        # Convert the string marks to integers
+        marks_list = list(map(int, marks_list))
+        
+        # Check if there are any marks provided
+        if len(marks_list) == 0:
+            raise ValueError("No marks provided")
+        
+        # Calculate the sum of the marks
+        total_marks = sum(marks_list)
+        
+        # Calculate the number of subjects
+        num_subjects = len(marks_list)
+        
+        # Calculate the average of the marks
+        average_marks = total_marks / num_subjects
+        
+        # Calculate the percentage
+        percentage = average_marks  # Since full marks for each subject is 100
+        
+        return percentage
+    
+    except ValueError as e:
+        # Handle specific error related to invalid integer conversion or no marks provided
+        raise ValueError(f"Invalid marks format: {e}")
+    except ZeroDivisionError:
+        # Handle the case where division by zero might occur
+        raise ZeroDivisionError("Number of subjects is zero, cannot calculate percentage")
+
+#Function to Validate the given data
+def validate_data_types_for_student_Add(data):
+    if not isinstance(data.get('student_id'), str):
+        return "student_id should be a string"
+    if not isinstance(data.get('name'), str):
+        return "name should be a string"
+    if not isinstance(data.get('branch'), str):
+        return "branch should be a string"
+    if not isinstance(data.get('admission_year'), str):
+        return "admission_year should be a string"
+    if not isinstance(data.get('placed', 'No'), str):
+        return "placed should be a string"
+    if not isinstance(data.get('semester_wise_marks'), str):
+        return "semester_wise_marks should be a string"
+    if not isinstance(data.get('certified_skills', ''), str):
+        return "certified_skills should be a string"
+    
+    # Validate branch
+    valid_branches = ["CS", "CIVIL", "ELECTRONIC", "MECH", "IT"]
+    if data.get('branch') not in valid_branches:
+        return f"branch should be one of {valid_branches}"
+    
+    # Validate marks format
+    marks = data.get('semester_wise_marks')
+    try:
+        marks_list = marks.split(',')
+        for mark in marks_list:
+            int(mark)  # This will raise ValueError if conversion fails
+    except ValueError:
+        return "semester_wise_marks should contain valid integers separated by commas"
+
+    
+    return None
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # Route function to add a new student --->                                          /student/add
 @app.route('/student/add', methods=['POST'])
 def add_student():
-    student_id = request.json.get('student_id')
-    name = request.json.get('name')
-    branch = request.json.get('branch')
-    admission_year = request.json.get('admission_year')
-    placed = request.json.get('placed', 'No')  # Default to 'No'
-    semester_wise_marks = request.json.get('semester_wise_marks')
-    percentage = request.json.get('percentage')
-    certified_skills = request.json.get('certified_skills', '')
+    # Method to only accept POST method
+    if request.method == 'POST':
+        student_data = request.json
+        student_id = student_data.get('student_id')
+        name = student_data.get('name')
+        branch = student_data.get('branch')
+        admission_year = student_data.get('admission_year')
+        placed = student_data.get('placed', 'No')  # Default to 'No'
+        semester_marks = student_data.get('semester_wise_marks')
+        certified_skills = student_data.get('certified_skills', '')
 
-    # if key and values aren't given
-    if not student_id or not name or not branch or not admission_year or not semester_wise_marks or not percentage:
-        return jsonify({"error": "Missing required student details"}), 400  # Bad Request - Missing Parameter
+        # if key and values aren't given
+        if not student_id or not name or not branch or not admission_year or not semester_marks:
+            return jsonify({"error": "Missing required student details"}), 400  # Bad Request - Missing Parameter
 
-    try:
-        # Check if student ID already exists
-        existing_student = get_student_data_from_snowflake(student_id)
-        if existing_student:
-            return jsonify({"error": "Student ID already exists"}), 409  # Conflict - ID already exists
-
+        # Validate data types
+        error = validate_data_types_for_student_Add(student_data)
+        if error:
+            return jsonify({"error": error}), 400  # Bad Request - Invalid Data Types
+        
+        percentage = calculate_percentage(semester_wise_marks= semester_marks)
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO STUDENT (ID, NAME, BRANCH, ADMYEAR, PLACED, SEM_WISE, PERCENTAGE, CERTIFIED_SKILLS) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-            (student_id, name, branch, admission_year, placed, semester_wise_marks, percentage, certified_skills)
-        )
-        conn.commit()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Internal Server Error
-    finally:
-        cursor.close()
+        try:
+            # Check if student ID already exists
+            existing_student = get_student_data_from_snowflake(student_id)
+            if existing_student:
+                return jsonify({"error": "Student ID already exists"}), 409  # Conflict - ID already exists
 
-    return jsonify({"message": "Student added successfully"}), 201  # Created
+            cursor.execute(
+                "INSERT INTO STUDENT (ID, NAME, BRANCH, ADMYEAR, PLACED, SEM_WISE, PERCENTAGE, CERTIFIED_SKILLS) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (student_id, name, branch, admission_year, placed, semester_marks, percentage, certified_skills)
+            )
+            conn.commit()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500  # Internal Server Error
+        finally:
+            cursor.close()
+
+        return jsonify({"message": "Student added successfully"}), 201  # Created
+    
+    # Handle other methods
+    else:
+        return jsonify({"error": "Method Not Allowed"}), 405  # Method Not Allowed
+
+# Rote Function to delete the Student row --->                                          /student/remove
+@app.route('/student/remove', methods = ['DELETE'])
+def delete_student():
+    # Method to only accept DELETE method
+    if request.method == 'DELETE':
+        student_id = request.args.get('student_id')
+        password = request.args.get('password')
+        if not student_id or not password:
+            return jsonify({"error": "Missing student_id or password"}), 400 # Bad Request - Missing Parameter
+        
+        student_data, status_code = validate_student_credentials(student_id, password)
+
+        if status_code != 200: # NOT OK
+            return jsonify(student_data), status_code
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM STUDENT WHERE ID = %s", (student_id,))
+            conn.commit()
+            return jsonify({"message": "Student deleted successfully"}), 200 # OK
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500 # Internal Server Error
+        finally:
+            cursor.close()
+        
+    # Handle other methods for /student/remove
+    else:
+        return jsonify({"error": "Method Not Allowed"}), 405 # Method Not Allowed
+
 
 # Route Function to display Student Details --->                                        /student/details
 @app.route('/student/details', methods=['GET'])
 def display_student_details():
-    student_id = request.args.get('student_id')
-    password = request.args.get('password')
+    if request.method == 'GET':
+        student_id = request.args.get('student_id')
+        password = request.args.get('password')
 
-    # if key and values aren't given
-    if not student_id or not password:
-        return jsonify({"error": "Missing student_id or password"}), 400 # Bad Request - Missing Parameter
-    
-    student_data, status_code = validate_student_credentials(student_id, password)
+        # if key and values aren't given
+        if not student_id or not password:
+            return jsonify({"error": "Missing student_id or password"}), 400 # Bad Request - Missing Parameter
+        
+        student_data, status_code = validate_student_credentials(student_id, password)
 
-    if status_code != 200:
-        return jsonify(student_data), status_code
+        if status_code != 200:
+            return jsonify(student_data), status_code
+        
+        display = {
+            "Student ID":          student_data[0],
+            "Name":                student_data[1],
+            "Branch":              student_data[6],
+            "Admission Year":      student_data[2],
+            "Placed":              student_data[3],
+            "Semester-wise Marks": student_data[4],
+            "Percentage":          float(student_data[5]),
+            "Certified Skills":    student_data[7]
+        }
+        return jsonify(display), status_code
     
-    display = {
-        "Student ID":          student_data[0],
-        "Name":                student_data[1],
-        "Branch":              student_data[6],
-        "Admission Year":      student_data[2],
-        "Placed":              student_data[3],
-        "Semester-wise Marks": student_data[4],
-        "Percentage":          float(student_data[5]),
-        "Certified Skills":    student_data[7]
-    }
-    return jsonify(display), status_code
+    # Handle other methods for /student/details
+    else:
+        return jsonify({"error": "Method Not Allowed"}), 405 # Method Not Allowed   
 
 # Route Function to display only the eligible companies for the specific student --->                   /student/eligibility
 @app.route('/student/eligibility', methods=['GET'])
