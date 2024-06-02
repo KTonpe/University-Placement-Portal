@@ -286,20 +286,24 @@ def display_student_details():
         if not student_id or not password:
             return jsonify({"error": "Missing student_id or password"}), 400 # Bad Request - Missing Parameter
         
+        # Check for SQL injection patterns (simple heuristic check)
+        if re.search(r"[\'\";]", student_id) or re.search(r"[\'\";]", password):
+            return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
+        
         student_data, status_code = validate_student_credentials(student_id, password)
 
         if status_code != 200:
             return jsonify(student_data), status_code
         
         display = {
-            "Student ID":          student_data[0],
-            "Name":                student_data[1],
-            "Branch":              student_data[6],
-            "Admission Year":      student_data[2],
-            "Placed":              student_data[3],
-            "Semester-wise Marks": student_data[4],
+            "Student ID":          html.escape(student_data[0]),
+            "Name":                html.escape(student_data[1]),
+            "Branch":              html.escape(student_data[6]),
+            "Admission Year":      html.escape(student_data[2]),
+            "Placed":              html.escape(student_data[3]),
+            "Semester-wise Marks": html.escape(student_data[4]),
             "Percentage":          float(student_data[5]),
-            "Certified Skills":    student_data[7]
+            "Certified Skills":    [html.escape(skill) for skill in student_data[7]]
         }
         return jsonify(display), status_code
     
@@ -351,7 +355,7 @@ def student_eligibilty():
                 "Required Percentage":        float(company[3]),
                 "Required Skills":            html.escape(company[5]),
                 "Student Branch":             html.escape(student_data[6]),
-                "Student Skills":             html.escape(list(student_skill_set)),
+                "Student Skills":             [html.escape(skill) for skill in student_skill_set],
                 "Matching Skills":            html.escape(common_skills),
                 "Student Percentage":         student_percentage,
                 "Placement Likelihood":       likelihood
