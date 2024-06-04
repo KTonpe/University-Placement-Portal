@@ -57,12 +57,21 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: Login to Azure
+      - name: Login to Azure (using older secrets)
+        if: always()
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D1D07B93A7944ACEAF3126F2B94840A0 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_620C5D3AFDC04C56BF9FE6675640DEDB }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_44477DD4A3394336857C97848CE5B61E }}
+
+      - name: Login to Azure (using recent secrets)
+        if: failure()
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DB87EF9E88CF4D96A9FC979CDD8FA3BF }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_362637ECCEDB4E55A2840B07F080319E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_FB9A954A538E4F6E94B9A9D950B2A365 }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
