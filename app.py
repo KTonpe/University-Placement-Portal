@@ -656,9 +656,7 @@ def display_company_applications():
         # Fetch applications for the company
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                "SELECT APPLICATION_ID, STUDENT_ID FROM APPLICATION WHERE COMPANY_ID = %s", (company_id,)
-            )
+            cursor.execute("SELECT APPLICATION_ID, STUDENT_ID FROM APPLICATION WHERE COMPANY_ID = %s", (company_id,))
             applications = cursor.fetchall()
         except Exception as e:
             return jsonify({"error": str(e)}), 500  # Internal Server Error
