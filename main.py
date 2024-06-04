@@ -214,6 +214,12 @@ def validate_data_types_for_company(data):
         return "required_skills should be a string"
     return None
 #--------------------------------------------------------------------------------------------------------------------------------------------------
+# Route function to display th home page --------->                                 /
+
+@app.route('/', methods=['GET'])
+def home():
+    return "Welcome to the University Portal"
+#--------------------------------------------------------------------------------------------------------------------------------------------------
 # Route function to add a new student --->                                          /student/add
 @app.route('/student/add', methods=['POST'])
 def add_student():
