@@ -213,6 +213,28 @@ def validate_data_types_for_company(data):
     if not isinstance(data.get('required_skills'), str):
         return "required_skills should be a string"
     return None
+
+def validate_update_applications(application_update_data):
+    if not isinstance(application_update_data.get('application_id'),str):
+        return "Application ID should be a string"
+    if not isinstance(application_update_data.get('status'),str):
+        return "Status should be a string"
+    if not isinstance(application_update_data.get('company_id'),str):
+        return "Company ID should be a string"
+    if not isinstance(application_update_data.get('company_password'),str):
+        return "Company password should be a string"
+    if application_update_data.get('status') not in ['accept', 'reject']:
+        return "Invalid status. Must be 'accept' or 'reject'"
+    return None
+
+def validate_data_types_update_skills(new_skills,student_id,password):
+    if not isinstance(new_skills,list):
+            return jsonify({"error": "new_skills should be a list of skills"}), 400 #Bad Request
+    if not isinstance(student_id,str):
+        return jsonify({"error": "student_id should be a string"}), 400 #Bad Request
+    if not isinstance(password,str):
+        return jsonify({"error": "password should be a string"}), 400 #Bad Request
+    return None
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # Route function to display th home page --------->                                 /
 
@@ -380,7 +402,7 @@ def student_eligibilty():
             company_display = {
                 "Branch":                     html.escape(company[3]),
                 "Company ID":                 html.escape(company[5]),
-                "Company Name":                       html.escape(company[0]),
+                "Company Name":               html.escape(company[0]),
                 "Brief Description":          html.escape(company[1]),
                 "Required Percentage":        float(company[2]),
                 "Required Skills":            html.escape(company[4]),
@@ -413,7 +435,10 @@ def update_student_skills():
         # Check for SQL injection patterns (simple heuristic check)
         if re.search(r"[\'\";]", student_id) or re.search(r"[\'\";]", password):
             return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
-
+        
+        error = validate_data_types_update_skills(new_skills=new_skills,student_id=student_id,password=password)
+        if error:
+            return jsonify({"error": error}), 400  # Bad Request - Invalid input
 
         student_data, status_code = validate_student_credentials(student_id, password)
 
@@ -642,12 +667,17 @@ def delete_company():
 @app.route('/company/applications', methods=['GET'])
 def display_company_applications():
     if request.method == 'GET':
+        cursor = conn.cursor()
         company_id = request.args.get('company_id')
         company_password = request.args.get('company_password')
 
         # if key and values aren't given
         if not company_id or not company_password:
             return jsonify({"error": "Missing company_id or company_password"}), 400 # Bad Request - Missing Parameter
+        
+        # Check for SQL injection patterns (simple heuristic check)
+        if re.search(r"[\'\";]", company_id) or re.search(r"[\'\";]", company_password):
+            return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
 
         company_data, status_code = validate_company_credentials(company_id, company_password)
         if status_code != 200:
@@ -655,7 +685,6 @@ def display_company_applications():
 
         # Fetch applications for the company
         try:
-            cursor = conn.cursor()
             cursor.execute("SELECT APPLICATION_ID, STUDENT_ID FROM APPLICATION WHERE COMPANY_ID = %s", (company_id,))
             applications = cursor.fetchall()
         except Exception as e:
@@ -672,15 +701,15 @@ def display_company_applications():
             student_data = get_student_data_from_snowflake(student_id=student_id)
             matching_skills, student_skills, company_required_skills = get_matching_skills(student_data[7], company_data[5])
             application_display = {
-                "Application ID": application[0],
-                "Compamy ID" : company_id,
-                "Student ID": application[1],
-                "Student Name": student_data[1],
-                "Branch": student_data[6],
-                "Percentage": student_data[5],
-                "Certified Skills": student_data[7],
-                "Matched Skills":  matching_skills,
-                "Admission Year" : student_data [2]
+                "Application ID": html.escape(application[0]),
+                "Compamy ID" : html.escape(company_id),
+                "Student ID": html.escape(application[1]),
+                "Student Name": html.escape(student_data[1]),
+                "Branch": html.escape(student_data[6]),
+                "Percentage": float(student_data[5]),
+                "Certified Skills": [html.escape(skill) for skill in student_data[7]],
+                "Matched Skills":  [html.escape(skill) for skill in matching_skills],
+                "Admission Year" : html.escape(student_data [2])
             }
             applications_list.append(application_display)
 
@@ -693,69 +722,80 @@ def display_company_applications():
 # Route to accept or reject an application --->                                             /company/application/update
 @app.route('/company/application/update', methods=['POST'])
 def update_application_status():
-    application_id = request.json.get('application_id')
-    company_id = request.json.get('company_id')
-    company_password = request.json.get('company_password')
-    status = request.json.get('status')
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        application_update_data = request.json
+        application_id = application_update_data.get('application_id')
+        company_id = application_update_data.get('company_id')
+        company_password = application_update_data.get('company_password')
+        status = application_update_data.get('status')
 
-    # if key and values aren't given
-    if not application_id or not company_id or not company_password or not status:
-        return jsonify({"error": "Missing application_id, company_id, company_password, or status"}), 400  # Bad Request - Missing Parameter
-
-    if status not in ['accept', 'reject']:
-        return jsonify({"error": "Invalid status. Must be 'accept' or 'reject'"}), 400  # Bad Request - Invalid Status
-
-    company_data, status_code = validate_company_credentials(company_id, company_password)
-    if status_code != 200:
-        return jsonify(company_data), status_code
-
-    # Fetch application details
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT STUDENT_ID FROM APPLICATION WHERE APPLICATION_ID = %s AND COMPANY_ID = %s", (application_id, company_id)
-        )
-        application = cursor.fetchone()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Internal Server Error
-    finally:
-        cursor.close()
-
-    if not application:
-        return jsonify({"error": "Application not found"}), 404  # Not Found
-
-    student_id = application[0]
-
-    # If status is 'accept', update the student's 'PLACED' column
-    if status == 'accept':
-        try:
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE STUDENT SET PLACED = 'Yes' WHERE ID = %s", (student_id,)
-            )
-            conn.commit()
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500  # Internal Server Error
-        finally:
-            cursor.close()
+        # if key and values aren't given
+        if not application_id or not company_id or not company_password or not status:
+            return jsonify({"error": "Missing application_id, company_id, company_password, or status"}), 400  # Bad Request - Missing Parameter
         
-        message = "Application accepted and student status updated to 'Placed'"
-    
-    # If status is 'reject', simply acknowledge the rejection
-    else:
+        # Check for SQL injection patterns (simple heuristic check)
+        if re.search(r"[\'\";]", application_id) or re.search(r"[\'\";]", company_id) or re.search(r"[\'\";]", company_password):
+            return jsonify({"error": "Invalid input"}), 400  # Bad Request - Invalid input
+
+        error = validate_update_applications(application_update_data)
+        if error:
+            return jsonify({"error": error}), 400  # Bad Request - Invalid input
+        
+        sanitized_status = html.escape(status)
+
+        company_data, status_code = validate_company_credentials(company_id, company_password)
+        if status_code != 200:
+            return jsonify(company_data), status_code
+
+        # Fetch application details
         try:
-            cursor = conn.cursor()
             cursor.execute(
-                "UPDATE STUDENT SET PLACED = 'No' WHERE ID = %s", (student_id,)
+                "SELECT STUDENT_ID FROM APPLICATION WHERE APPLICATION_ID = %s AND COMPANY_ID = %s", (application_id, company_id)
             )
-            conn.commit()
+            application = cursor.fetchone()
         except Exception as e:
             return jsonify({"error": str(e)}), 500  # Internal Server Error
         finally:
             cursor.close()
-        message = "Application rejected"
 
-    return jsonify({"message": message}), 200  # OK
+        if not application:
+            return jsonify({"error": "Application not found"}), 404  # Not Found
+
+        student_id = application[0]
+
+        # If status is 'accept', update the student's 'PLACED' column
+        if sanitized_status == 'accept':
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE STUDENT SET PLACED = 'Yes' WHERE ID = %s", (student_id,)
+                )
+                conn.commit()
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500  # Internal Server Error
+            finally:
+                cursor.close()
+            
+            message = "Application accepted and student status updated to 'Placed'"
+        
+        # If status is 'reject', simply acknowledge the rejection
+        else:
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE STUDENT SET PLACED = 'No' WHERE ID = %s", (student_id,)
+                )
+                conn.commit()
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500  # Internal Server Error
+            finally:
+                cursor.close()
+        return jsonify({"message": "Application rejected"}), 200  # OK
+    
+    # Handle other methods for /company/application/update
+    else:
+        return jsonify({"error": "Method Not Allowed"}), 405  # Method Not Allowed
 
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------
