@@ -218,7 +218,7 @@ def validate_data_types_for_company(data):
 
 @app.route('/', methods=['GET'])
 def home():
-    return "Welcome to the University Portal"
+    return jsonify({"message" : "Welcome to the University Portal"}),200
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # Route function to add a new student --->                                          /student/add
 @app.route('/student/add', methods=['POST'])
