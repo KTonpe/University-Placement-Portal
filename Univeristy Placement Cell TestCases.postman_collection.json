@@ -1422,7 +1422,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Snowflake\",\"SQL\",\"Python\",\"Snowflake\"]\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Snowflake\",\"SQL\",\"Python\",\"Snowflake\",\"Python\",\"Comedy\"]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1554,7 +1554,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"13\"\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"2ER456\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1839,7 +1839,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"13\"\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"2ER456\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2744,7 +2744,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"company_id\": \"C12345\",\r\n  \"company_password\": \"wrongpassword\"\r\n}",
+									"raw": "{\r\n  \"company_id\": \"16\",\r\n  \"company_password\": \"wrongpassword\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
