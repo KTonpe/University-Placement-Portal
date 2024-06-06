@@ -38,7 +38,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"name\": \"{{Stud_Name_1}}\",\r\n    \"branch\": \"IT\",\r\n    \"admission_year\": \"2019\",\r\n    \"placed\": \"No\",\r\n    \"semester_wise_marks\": \"80,85,90,88,87,85,98,100\",\r\n    \"certified_skills\": \"Drawing,Photoshop,Comedy\"\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"name\": \"{{Stud_Name_1}}\",\r\n    \"branch\": \"CIVIL\",\r\n    \"admission_year\": \"2019\",\r\n    \"placed\": \"No\",\r\n    \"semester_wise_marks\": \"80,85,90,88,87,85,98,100\",\r\n    \"certified_skills\": \"Drawing,Photoshop,Comedy\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -210,7 +210,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_2}}\",\r\n    \"name\": \"{{Stud_Name_2}}\",\r\n    \"branch\": \"ELECTRONIC\",\r\n    \"admission_year\": \"2019\",\r\n    \"semester_wise_marks\": \"80,85,90,95\"\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_2}}\",\r\n    \"name\": \"{{Stud_Name_2}}\",\r\n    \"branch\": \"IT\",\r\n    \"admission_year\": \"2019\",\r\n    \"semester_wise_marks\": \"80,85,90,95\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -296,7 +296,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_New_ID}}\",\r\n    \"name\": \"Jane Doe\",\r\n    \"branch\": \"IT\",\r\n    \"admission_year\": \"2021\",\r\n    \"placed\": \"Yes\",\r\n    \"semester_wise_marks\": \"75,85,65,80\",\r\n    \"certified_skills\": \"C++,JavaScript\"\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"name\": \"Jane Doe\",\r\n    \"branch\": \"IT\",\r\n    \"admission_year\": \"2021\",\r\n    \"placed\": \"Yes\",\r\n    \"semester_wise_marks\": \"75,85,65,80\",\r\n    \"certified_skills\": \"C++,JavaScript\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -495,13 +495,13 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_Del_Stud}}?{{Student_ID}}",
+									"raw": "{{BASE}}{{B_Del_Stud}}?{{Stud_ID_2}}",
 									"host": [
 										"{{BASE}}{{B_Del_Stud}}"
 									],
 									"query": [
 										{
-											"key": "{{Student_ID}}",
+											"key": "{{Stud_ID_2}}",
 											"value": null
 										}
 									]
@@ -694,14 +694,14 @@
 									"formdata": []
 								},
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id=S017&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id=XYZ456&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "S017"
+											"value": "XYZ456"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -777,14 +777,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id=S002&{{Invlaid_Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id=XYZ456&{{Invlaid_Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "S002"
+											"value": "XYZ456"
 										},
 										{
 											"key": "{{Invlaid_Pass_Stud}}",
@@ -1216,7 +1216,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Time Management\"]\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Time Management\",\"Drawing\",\"Time Management\"]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2419,6 +2419,29 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Adding another",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company_id\": \"{{Comp_ID_2}}\",\r\n    \"name\": \"{{Comp_Name_2}}\",\r\n    \"brief_description\": \"A leading tech company\",\r\n    \"required_percentage\": 98.0,\r\n    \"branch\": \"CS\",\r\n    \"required_skills\": \"Python, Java,SnowFlake\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE}}{{B_Add_Comp}}",
+									"host": [
+										"{{BASE}}{{B_Add_Comp}}"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -3190,7 +3213,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"application_id\": \"701\",\r\n    \"company_id\": \"1\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
+									"raw": "{\r\n    \"application_id\": \"901\",\r\n    \"company_id\": \"ABC123\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3232,7 +3255,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"application_id\": \"801\",\r\n    \"company_id\": \"5\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"reject\"\r\n}",
+									"raw": "{\r\n    \"application_id\": \"601\",\r\n    \"company_id\": \"1\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"reject\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3399,7 +3422,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"application_id\": \"1\",\r\n    \"company_id\": \"16A\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
+									"raw": "{\r\n    \"application_id\": \"601\",\r\n    \"company_id\": \"16A\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"

@@ -86,9 +86,12 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
+      - name: Install Newman HTML reporter
+        run: npm install -g newman-reporter-html
+
       - name: Run Postman tests
         run: |
-          newman run Univeristy\ Placement\ Cell\ TestCases.postman_collection.json -e Uni\ Port.postman_environment.json -r cli,html --reporter-html-export newman-report.html
+          newman run "Univeristy Placement Cell TestCases.postman_collection.json" -e "Uni Port.postman_environment.json" -r cli,html --reporter-html-export newman-report.html
 
       - name: Upload test report
         uses: actions/upload-artifact@v3
