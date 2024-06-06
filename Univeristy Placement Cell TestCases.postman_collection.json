@@ -605,7 +605,7 @@
 											"});\r",
 											"pm.test(\"Response body contains error message\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
-											"    pm.expect(jsonData.error).to.include(\"Student ID ABCD doesn't exist\");\r",
+											"    pm.expect(jsonData.error).to.include(\"Student ID S0T53 doesn't exist\");\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -777,14 +777,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id=XYZ456&{{Invlaid_Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id={{Stud_ID_1}}&{{Invlaid_Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "XYZ456"
+											"value": "{{Stud_ID_1}}"
 										},
 										{
 											"key": "{{Invlaid_Pass_Stud}}",
@@ -1554,7 +1554,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \" C12345\"\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"13\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1839,7 +1839,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"C12345\"\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"13\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"

@@ -345,7 +345,7 @@ def delete_student():
 @app.route('/student/details', methods=['GET'])
 def display_student_details():
     if request.method == 'GET':
-        student_id = request.args.get('student_id')
+        student_id = request.args.get('student_https://github.com/KTonpe/University-Placement-Portal/actions/runs/9400321707/job/25889971526#logsid')
         password = request.args.get('password')
 
         # if key and values aren't given
@@ -479,7 +479,7 @@ def update_student_skills():
         if student_data[7] is None:
             updated_skills = list(set(sanitized_skills))
         else:
-            current_skills = student_data[7].split(', ') if student_data[7] else []
+            current_skills = student_data[7].split(',') if student_data[7] else []
             current_skills.extend(sanitized_skills)
             updated_skills = list(set(current_skills))  # Remove duplicates
 
