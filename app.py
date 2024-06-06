@@ -345,7 +345,7 @@ def delete_student():
 @app.route('/student/details', methods=['GET'])
 def display_student_details():
     if request.method == 'GET':
-        student_id = request.args.get('student_https://github.com/KTonpe/University-Placement-Portal/actions/runs/9400321707/job/25889971526#logsid')
+        student_id = request.args.get('student_id')
         password = request.args.get('password')
 
         # if key and values aren't given
