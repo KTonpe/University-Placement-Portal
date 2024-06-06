@@ -694,14 +694,14 @@
 									"formdata": []
 								},
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id={{Stud_ID_1}}&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id=S001&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "{{Stud_ID_1}}"
+											"value": "S001"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -777,14 +777,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id={{Stud_ID_1}}&{{Invlaid_Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id=S001&{{Invlaid_Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "{{Stud_ID_1}}"
+											"value": "S001"
 										},
 										{
 											"key": "{{Invlaid_Pass_Stud}}",
@@ -849,7 +849,7 @@
 											"});\r",
 											"pm.test(\"Response body contains error message\", function () {\r",
 											"    var jsonData = pm.response.json();\r",
-											"    pm.expect(jsonData.error).to.include(\"Student ID S0SACHIN doesn't exist\");\r",
+											"    pm.expect(jsonData.error).to.include(\"Student ID S001DE doesn't exist\");\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -861,14 +861,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id=S0SACHIN&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id=S001DE&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "S0SACHIN"
+											"value": "S001DE"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -2381,6 +2381,24 @@
 						},
 						{
 							"name": "Adding another",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"pm.test(\"Response contains success message\", function () {\r",
+											"    var jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.message).to.eql(\"Company added successfully\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "POST",
 								"header": [],
