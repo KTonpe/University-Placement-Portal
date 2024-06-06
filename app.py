@@ -375,7 +375,7 @@ def display_student_details():
             "Placed":              html.escape(student_data[3]),
             "Semester-wise Marks": html.escape(student_data[4]),
             "Percentage":          float(student_data[5]),
-            "Certified Skills":    [html.escape(skill) for skill in student_data[7]],
+            "Certified Skills":    html.escape(student_data[7]),
         }
         return jsonify(display), status_code
     

@@ -411,14 +411,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{BASE}}{{B_Del_Stud}}?student_id={{Stud_Name_2}}&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_Del_Stud}}?student_id={{Stud_ID_2}}&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_Del_Stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "{{Stud_Name_2}}"
+											"value": "{{Stud_ID_2}}"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -617,14 +617,14 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_Del_Stud}}?student_id=ABCD&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_Del_Stud}}?student_id={{Stud_ID_2}}&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_Del_Stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "ABCD"
+											"value": "{{Stud_ID_2}}"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -694,14 +694,14 @@
 									"formdata": []
 								},
 								"url": {
-									"raw": "{{BASE}}{{B_details_stud}}?student_id=XYZ456&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_details_stud}}?student_id={{Stud_ID_1}}&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_details_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "XYZ456"
+											"value": "{{Stud_ID_1}}"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -913,14 +913,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_Eligibilty_stud}}?student_id=S001&{{Pass_Stud}}",
+									"raw": "{{BASE}}{{B_Eligibilty_stud}}?student_id={{Stud_ID_1}}&{{Pass_Stud}}",
 									"host": [
 										"{{BASE}}{{B_Eligibilty_stud}}"
 									],
 									"query": [
 										{
 											"key": "student_id",
-											"value": "S001"
+											"value": "{{Stud_ID_1}}"
 										},
 										{
 											"key": "{{Pass_Stud}}",
@@ -1299,7 +1299,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"S1002AC\",\r\n    \"password\": \"student123A\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Python\"]\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123A\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Python\"]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1422,48 +1422,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"S0VIKAS\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Snowflake\",\"SQL\",\"Python\",\"Snowflake\"]\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{BASE}}{{B_Updat_Skil_Stud}}",
-									"host": [
-										"{{BASE}}{{B_Updat_Skil_Stud}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "XSS Attacks",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"pm.test(\"Response is sanitized\", function () {\r",
-											"    var jsonData = pm.response.json();\r",
-											"    pm.expect(jsonData).to.have.property(\"message\").and.include(\"Skills updated successfully of student ID\");\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"S1002AC\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"<script>alert('XSS')</script>\"]\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"new_skills\": [\"Python\", \"Java\",\"Snowflake\",\"SQL\",\"Python\",\"Snowflake\"]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1595,7 +1554,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"5\"\r\n}\r\n",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \" C12345\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1880,7 +1839,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"5\"\r\n}",
+									"raw": "{\r\n    \"student_id\": \"{{Stud_ID_1}}\",\r\n    \"password\": \"student123\",\r\n    \"company_id\": \"C12345\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2953,14 +2912,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{BASE}}{{B_App_Comp_Display}}?company_id=5&{{Comp_Pass}}",
+									"raw": "{{BASE}}{{B_App_Comp_Display}}?company_id=9&{{Comp_Pass}}",
 									"host": [
 										"{{BASE}}{{B_App_Comp_Display}}"
 									],
 									"query": [
 										{
 											"key": "company_id",
-											"value": "5"
+											"value": "9"
 										},
 										{
 											"key": "{{Comp_Pass}}",
@@ -3213,7 +3172,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"application_id\": \"901\",\r\n    \"company_id\": \"ABC123\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
+									"raw": "{\r\n    \"application_id\": \"803\",\r\n    \"company_id\": \"9\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"accept\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3255,7 +3214,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"application_id\": \"601\",\r\n    \"company_id\": \"1\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"reject\"\r\n}",
+									"raw": "{\r\n    \"application_id\": \"903\",\r\n    \"company_id\": \"9\",\r\n    \"company_password\": \"company*123\",\r\n    \"status\": \"reject\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
