@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - UniversityPlacement
+name: Build, deploy, and test Python app to Azure Web App - UniversityPlacement
 
 on:
   push:
@@ -38,6 +38,7 @@ jobs:
           path: |
             release.zip
             !venv/
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -69,3 +70,28 @@ jobs:
         with:
           app-name: 'UniversityPlacement'
           slot-name: 'production'
+
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Ensure compatibility with Newman
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman tests
+        run: |
+          newman run Univeristy\ Placement\ Cell\ TestCases.postman_collection.json -e Uni\ Port.postman_environment.json -r cli,html --reporter-html-export newman-report.html
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: newman-report
+          path: newman-report.html
